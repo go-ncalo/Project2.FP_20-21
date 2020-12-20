@@ -23,4 +23,5 @@ def posicoes_iguais(p1, p2):
 def posicao_para_str(p):
     return p[0] + p[1]
 
-def obter_posicoes_adjacentes(p)
+def obter_posicoes_adjacentes(p):
+    return "hello"
