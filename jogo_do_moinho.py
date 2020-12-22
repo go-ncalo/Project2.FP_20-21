@@ -7,9 +7,12 @@ def cria_posicao(c,l):
         raise ValueError("cria_posicao: argumentos invalidos")
     return [c, l]
 
+def eh_posicao(arg):
+    return isinstance(arg, list) and arg[0] in ("a", "b", "c") and arg[1] in ("1", "2", "3") and len(arg) == 2
+
 def cria_copia_posicao(p):
     #ESTÁ MAL
-    if not isinstance(p, list) or p[0] not in ("a", "b", "c") or p[1] not in ("1", "2", "3"):
+    if not eh_posicao(p):
         raise ValueError("cria_copia_posicao: argumento invalido")
     return [str(p[0]), str(p[1])]
 
@@ -18,9 +21,6 @@ def obter_pos_c(p):
 
 def obter_pos_l(p):
     return p[1]
-
-def eh_posicao(arg):
-    return isinstance(arg, list) and arg[0] in ("a", "b", "c") and arg[1] in ("1", "2", "3") and len(arg) == 2
 
 def posicoes_iguais(p1, p2):
     return eh_posicao(p1) and eh_posicao(p2) and p1 == p2
@@ -48,14 +48,14 @@ def cria_peca(s):
         raise ValueError("cria_peca: argumento invalido")
     return [s]
 
-def cria_copia_peca(j):
-        #ESTÁ MAL
-    if not isinstance(j, list) or j[0] not in ("X", "O", " ") or not len(j) == 1:
-        raise ValueError("cria_copia_posicao: argumento invalido")
-    return [str(j[0])]
-
 def eh_peca(arg):
     return isinstance(arg, list) and arg[0] in ("X", "O", " ") and len(arg) == 1
+
+def cria_copia_peca(j):
+        #ESTÁ MAL
+    if not eh_peca(j):
+        raise ValueError("cria_copia_posicao: argumento invalido")
+    return [str(j[0])]
 
 def pecas_iguais(j1, j2):
     return eh_peca(j1) and eh_peca(j2) and j1 == j2
