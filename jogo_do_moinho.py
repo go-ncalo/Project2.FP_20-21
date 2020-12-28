@@ -2,7 +2,6 @@
 
 # TAD posicao
 def cria_posicao(c, l):
-    # verificar a len
     if not isinstance(c, str) or c not in ("a", "b", "c") or not isinstance(l, str) or l not in ("1", "2", "3"):
         raise ValueError("cria_posicao: argumentos invalidos")
     return [c, l]
@@ -13,7 +12,6 @@ def eh_posicao(arg):
 
 
 def cria_copia_posicao(p):
-    # ESTÁ MAL
     if not eh_posicao(p):
         raise ValueError("cria_copia_posicao: argumento invalido")
     return [str(p[0]), str(p[1])]
@@ -62,7 +60,6 @@ def eh_peca(arg):
 
 
 def cria_copia_peca(j):
-    # ESTÁ MAL
     if not eh_peca(j):
         raise ValueError("cria_copia_posicao: argumento invalido")
     return [str(j[0])]
@@ -95,7 +92,10 @@ def inteiro_para_peca(int):
 
 # TAD tabuleiro
 def cria_tabuleiro():
-    return {"a": [[" "], [" "], [" "]], "b": [[" "], [" "], [" "]], "c": [[" "], [" "], [" "]]}
+    t = {}
+    for i in ("a", "b", "c"):
+        t[i] = [cria_peca(" "), cria_peca(" "), cria_peca(" ")]
+    return t
 
 
 def cria_copia_tabuleiro():
@@ -109,13 +109,13 @@ def obter_peca(t, p):
     return t[c][l - 1]
 
 
-def obter_vetor(t, s): # ESTÁ MAL
+def obter_vetor(t, s):
     vetor = ()
     if s in ["1", "2", "3"]:
         for i in ["a", "b", "c"]:
             vetor += (t[i][int(s) - 1], )
     elif s in ["a", "b", "c"]:
-            vetor += (t[s], )
+            vetor = tuple(t[s])
     
     return vetor
 
@@ -131,7 +131,7 @@ def coloca_peca(t, j, p):
 def remove_peca(t, p):
     c = obter_pos_c(p)
     l = int(obter_pos_l(p))
-    t[c][l - 1] = [" "]
+    t[c][l - 1] = cria_peca(" ")
 
     return t
 
@@ -143,13 +143,49 @@ def move_peca(t, p1, p2):
     l2 = int(obter_pos_l(p2))
 
     t[c2][l2 - 1] = t[c1][l1 - 1]
-    t[c1][l1 - 1] = [" "]
+    t[c1][l1 - 1] = cria_peca(" ")
     return t
 
 
 def eh_tabuleiro(arg):
-    return "hello world"
+    cont_x = 0
+    cont_o = 0
+    if isinstance(arg, dict) and len(arg) == 3:
+        for i in ("a", "b", "c"):
+            for j in range(3):
+                if peca_para_inteiro(arg[i][j]) == 1:
+                    cont_x += 1
+                elif peca_para_inteiro(arg[i][j]) == -1:
+                    cont_o += 1
 
+        dif = abs(cont_x - cont_o)
+
+        if 0 <= cont_x <= 3 and 0 <= cont_o <= 3:
+            if dif == 1 or dif == 0:
+                vencedor_x = [['X'], ['X'], ['X']]
+                vencedor_o = [['O'], ['O'], ['O']]
+                vazio = [[' '], [' '], [' ']]
+                for k in ("a", "b", "c"):
+                    if arg[k] == vazio:
+                        return True
+                    elif arg[k] != vencedor_x or arg[k] != vencedor_o:
+                        if arg["a"] != arg["b"] != arg["c"]:
+                            for l in ("1", "2", "3"):
+                                if obter_vetor(arg, l) == vazio:
+                                    return True
+                                elif obter_vetor(arg, l) != vencedor_x or obter_vetor(arg, l) != vencedor_o:
+                                    if obter_vetor(arg, "1") != obter_vetor(arg, "2") != obter_vetor(arg, "3"):
+                                        return True
+                                    else:
+                                        return False    
+                        else:
+                            return False  
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
 
 def eh_posicao_livre(t, p):
     c = obter_pos_c(p)
@@ -159,8 +195,7 @@ def eh_posicao_livre(t, p):
 
 
 def tabuleiros_iguais(t1, t2):
-    return "hello world"
-
+    return eh_tabuleiro(t1) and eh_tabuleiro(t2) and t1 == t2
 
 def tabuleiro_para_str(t):
     list = []
@@ -188,6 +223,3 @@ def tuplo_para_tabuleiro(t):
         tab["c"][i] = inteiro_para_peca(t[i][2])
     
     return tab
-
-t = tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))
-print(tabuleiro_para_str(t))
