@@ -33,20 +33,34 @@ def posicao_para_str(p):
     return obter_pos_c(p) + obter_pos_l(p)
 
 
-# incompleta
 def obter_posicoes_adjacentes(p):
-    pos_adj = ()
     c = obter_pos_c(p)
-    l = int(obter_pos_l(p))
-    if l == 1 or l == 2:
-        pos = cria_posicao(c, str(l + 1))
-        if eh_posicao(pos):
-            pos_adj += (posicao_para_str(pos),)
-    if l == 2 or l == 3:
-        pos1 = cria_posicao(c, str(l - 1))
-        if eh_posicao(pos1):
-            pos_adj += (posicao_para_str(pos1),)
+    l = obter_pos_l(p)
+    if l == "1":
+        if c == "a":
+            pos_adj = (cria_posicao("b", "1"), cria_posicao("a", "2"), cria_posicao("b", "2"))
+        if c == "b":
+            pos_adj = (cria_posicao("a", "1"), cria_posicao("c", "1"), cria_posicao("b", "2"))
+        if c == "c":
+            pos_adj = (cria_posicao("b", "1"), cria_posicao("b", "2"), cria_posicao("c", "2"))
+    if l == "2":
+        if c == "a":
+            pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "2"), cria_posicao("a", "3"))
+        if c == "b":
+            pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "1"), cria_posicao("c", "1"),\
+                    cria_posicao("a", "2"), cria_posicao("c", "2"),\
+                    cria_posicao("a", "3"), cria_posicao("b", "3"), cria_posicao("c", "3"))
+        if c == "c":
+            pos_adj = (cria_posicao("c", "1"), cria_posicao("b", "2"), cria_posicao("c", "3"))
+    if l == "3":
+        if c == "a":
+            pos_adj = (cria_posicao("a", "2"), cria_posicao("b", "2"), cria_posicao("b", "3"))
+        if c == "b":
+            pos_adj = (cria_posicao("b", "2"), cria_posicao("a", "3"), cria_posicao("c", "3"))
+        if c == "c":
+            pos_adj = (cria_posicao("b", "2"), cria_posicao("c", "2"), cria_posicao("b", "3"))
 
+    return pos_adj
 
 # TAD peca
 def cria_peca(s):
@@ -98,8 +112,8 @@ def cria_tabuleiro():
     return t
 
 
-def cria_copia_tabuleiro():
-    return "hello"
+def cria_copia_tabuleiro(t):
+    return False
 
 
 def obter_peca(t, p):
@@ -223,3 +237,39 @@ def tuplo_para_tabuleiro(t):
         tab["c"][i] = inteiro_para_peca(t[i][2])
     
     return tab
+
+def obter_ganhador(t):
+    vencedor_x = ()
+    vencedor_o = ()
+    for i in range(3):
+        vencedor_x += (cria_peca("X"), )
+        vencedor_o += (cria_peca("O"), )
+
+    for j in ("a", "b", "c", "1", "2", "3"):
+        print(obter_vetor(t, j))
+        if obter_vetor(t, j) == vencedor_x:
+            return cria_peca("X")
+        elif obter_vetor(t, j) == vencedor_o:
+            return cria_peca("O")
+
+    return cria_peca(" ")
+
+def obter_posicoes_livres(t):
+    pos_livres = ()
+    for i in ("1", "2", "3"):
+        for j in ("a", "b", "c"):
+            pos = cria_posicao(j, i)
+            if obter_peca(t, pos) == cria_peca(" "):
+                pos_livres += (pos, )
+    
+    return pos_livres
+
+def obter_posicoes_jogador(t, j):
+    pos_jogador = ()
+    for i in ("1", "2", "3"):
+        for k in ("a", "b", "c"):
+            pos = cria_posicao(k, i)
+            if obter_peca(t, pos) == j:
+                pos_jogador += (pos, )
+    
+    return pos_jogador
