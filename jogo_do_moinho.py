@@ -1,6 +1,8 @@
 # Goncalo Botelho Mateus, 99225
 
 # TAD posicao
+# fazer comentário com todos as operações básicas
+# Representacao interna: ['coluna', 'linha']
 def cria_posicao(c, l):
     if not isinstance(c, str) or c not in ("a", "b", "c") or not isinstance(l, str) or l not in ("1", "2", "3"):
         raise ValueError("cria_posicao: argumentos invalidos")
@@ -47,8 +49,8 @@ def obter_posicoes_adjacentes(p):
         if c == "a":
             pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "2"), cria_posicao("a", "3"))
         if c == "b":
-            pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "1"), cria_posicao("c", "1"),\
-                    cria_posicao("a", "2"), cria_posicao("c", "2"),\
+            pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "1"), cria_posicao("c", "1"),
+                    cria_posicao("a", "2"), cria_posicao("c", "2"),
                     cria_posicao("a", "3"), cria_posicao("b", "3"), cria_posicao("c", "3"))
         if c == "c":
             pos_adj = (cria_posicao("c", "1"), cria_posicao("b", "2"), cria_posicao("c", "3"))
@@ -63,6 +65,8 @@ def obter_posicoes_adjacentes(p):
     return pos_adj
 
 # TAD peca
+# fazer comentário com todos as operações básicas
+# Representacao interna: ['peca']
 def cria_peca(s):
     if not isinstance(s, str) or s not in ("X", "O", " "):
         raise ValueError("cria_peca: argumento invalido")
@@ -105,6 +109,8 @@ def inteiro_para_peca(int):
     return j
 
 # TAD tabuleiro
+# fazer comentário com todos as operações básicas
+# Representacao interna: {"a": [peca, peca, peca], "b": [peca, peca, peca], "c": [peca, peca, peca]}
 def cria_tabuleiro():
     t = {}
     for i in ("a", "b", "c"):
@@ -113,8 +119,7 @@ def cria_tabuleiro():
 
 
 def cria_copia_tabuleiro(t):
-    return False
-
+    return dict(t)
 
 def obter_peca(t, p):
     c = obter_pos_c(p)
@@ -273,3 +278,38 @@ def obter_posicoes_jogador(t, j):
                 pos_jogador += (pos, )
     
     return pos_jogador
+
+def obter_movimento_manual(t, j):
+    cont_x = 0
+    cont_o = 0
+    pos_liv = obter_posicoes_livres(t)
+    for i in ("1", "2", "3"):
+        for k in ("a", "b", "c"):
+            pos = cria_posicao(k, i)
+            if obter_peca(t, pos) == cria_peca("X"):
+                cont_x += 1
+            elif obter_peca(t,pos) == cria_peca("O"):
+                cont_o += 1
+    if cont_x == 3 and cont_o == 3:
+        mov = input("Turno do jogador. Escolha um movimento: ")
+        orig = cria_posicao(mov[0], mov[1])
+        dest = cria_posicao(mov[2], mov[3])
+        pos_adj = obter_posicoes_adjacentes(orig)
+        if not orig == dest:
+            if dest not in pos_adj or dest not in pos_liv or obter_peca(t, orig) != j:
+                raise ValueError("obter_movimento_manual: escolha invalida")
+            else:
+                return (orig, dest)
+        else:
+            return (orig, dest)
+    else:
+        pos = input("Turno do jogador. Escolha uma posicao: ")
+        posicao = cria_posicao(pos[0], pos[1])
+        if posicao not in pos_liv:
+            raise ValueError("obter_movimento_manual: escolha invalida")
+        else:
+            return (posicao, )
+
+t = tuplo_para_tabuleiro(((0, 0, 0), (0, 0, 0), (0, 0, 0)))
+print(obter_movimento_manual(t, cria_peca("X")))
+
