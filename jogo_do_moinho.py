@@ -66,7 +66,7 @@ def cria_peca(s):
     return [s]
 
 def eh_peca(arg):
-    return isinstance(arg, list) and arg[0] in ("X", "O", " ") and len(arg) == 1
+    return isinstance(arg, list) and len(arg) == 1 and arg[0] in ("X", "O", " ")
 
 def cria_copia_peca(j):
     if not eh_peca(j):
@@ -106,7 +106,7 @@ def cria_tabuleiro():
     return tab
 
 def cria_copia_tabuleiro(t):
-    return dict(t)
+    return t.copy()
 
 def obter_peca(t, p):
     c = obter_pos_c(p)
@@ -120,7 +120,7 @@ def obter_vetor(t, s):
         for i in ["a", "b", "c"]:
             vetor += (t[i][int(s) - 1], )
     elif s in ["a", "b", "c"]:
-            vetor = tuple(t[s])
+        vetor = tuple(t[s])
     
     return vetor
 
@@ -156,7 +156,6 @@ def move_peca(t, p1, p2):
 def eh_tabuleiro(arg):
     vencedor_x = [['X'], ['X'], ['X']]
     vencedor_o = [['O'], ['O'], ['O']]
-    vazio = [[' '], [' '], [' ']]
 
     cont_x = 0
     cont_o = 0
@@ -172,25 +171,20 @@ def eh_tabuleiro(arg):
 
         if 0 <= cont_x <= 3 and 0 <= cont_o <= 3:
             if dif == 1 or dif == 0:
-                for k in ("a", "b", "c"):
-                    if arg[k] == vazio:
-                        return True
-                    elif arg[k] != vencedor_x or arg[k] != vencedor_o:
-                        if arg["a"] != arg["b"] != arg["c"]:
-                            for l in ("1", "2", "3"):
-                                if obter_vetor(arg, l) == vazio:
-                                    return True
-                                elif obter_vetor(arg, l) != vencedor_x or obter_vetor(arg, l) != vencedor_o:
-                                    if obter_vetor(arg, "1") != obter_vetor(arg, "2") != obter_vetor(arg, "3"):
-                                        return True
-                                    else:
-                                        return False  
-                                else:
-                                    return False  
-                        else:
-                            return False  
-                    else:
-                        return False
+                if arg == cria_tabuleiro():
+                    return True
+                else:
+                    for k in ("a", "b", "c"):
+                        if arg[k] != vencedor_x or arg[k] != vencedor_o:
+                            if arg["a"] != arg["b"] or arg["a"] != arg["c"]:
+                                for l in ("1", "2", "3"):
+                                    if obter_vetor(arg, l) != vencedor_x or obter_vetor(arg, l) != vencedor_o:
+                                        if obter_vetor(arg, "1") != obter_vetor(arg, "2") or obter_vetor(arg, "1") != obter_vetor(arg, "3"):
+                                            return True
+                                        else:
+                                            return False
+                            else:
+                                return False
             else:
                 return False
         else:
@@ -204,8 +198,23 @@ def eh_posicao_livre(t, p):
 
     return t[c][l - 1] == cria_peca(" ")
 
-def tabuleiros_iguais(t1, t2):
-    return eh_tabuleiro(t1) and eh_tabuleiro(t2) and t1 == t2
+def vetores_iguais(v1, v2):
+    tup = ()
+    for i in range(3):
+        tup += (pecas_iguais(v1[i], v2[i]), )
+    return tup == (True, True, True)
+
+def tabuleiros_iguais(t1, t2): # ESTA MAL
+    if eh_tabuleiro(t1) and eh_tabuleiro(t2):
+        veta1 = obter_vetor(t1, "a")
+        vetb1 = obter_vetor(t1, "b")
+        vetc1 = obter_vetor(t1, "c")
+        veta2 = obter_vetor(t2, "a")
+        vetb2 = obter_vetor(t2, "b")
+        vetc2 = obter_vetor(t2, "c")
+        return vetores_iguais(veta1, veta2) and vetores_iguais(vetb1, vetb2) and vetores_iguais(vetc1, vetc2)
+    else:
+        return False
 
 def tabuleiro_para_str(t):
     list = []
@@ -240,12 +249,6 @@ def in_pos(j, pos):
         return True
     else:
         return False
-
-def vetores_iguais(v1, v2):
-    tup = ()
-    for i in range(3):
-        tup += (pecas_iguais(v1[i], v2[i]), )
-    return tup == (True, True, True)
 
 def obter_ganhador(t):
     vencedor_x = ()
@@ -296,25 +299,35 @@ def fase_movimento(t):
 
 def obter_movimento_manual(t, j):
     pos_liv = obter_posicoes_livres(t)
-    if fase_movimento(3):
+    if fase_movimento(t):
         mov = input("Turno do jogador. Escolha um movimento: ")
-        orig = cria_posicao(mov[0], mov[1])
-        dest = cria_posicao(mov[2], mov[3])
-        pos_adj = obter_posicoes_adjacentes(orig)
-        if not posicoes_iguais(orig, dest):
-            if not in_pos(dest, pos_adj) or not in_pos(dest, pos_liv) or not pecas_iguais(obter_peca(t, orig), j):
-                raise ValueError("obter_movimento_manual: escolha invalida")
+        if isinstance(mov, str) and len(mov) == 4 and mov[0] and mov[2] in ("a", "b", "c") and mov[1] and mov[3] in ("1", "2", "3"):
+            orig = cria_posicao(mov[0], mov[1])
+            dest = cria_posicao(mov[2], mov[3])
+            pos_adj = obter_posicoes_adjacentes(orig)
+
+            if not posicoes_iguais(orig, dest):
+                if not in_pos(dest, pos_adj) or not in_pos(dest, pos_liv) or not pecas_iguais(obter_peca(t, orig), j):
+                    raise ValueError("obter_movimento_manual: escolha invalida")
+                else:
+                    return (orig, dest)
             else:
-                return (orig, dest)
-        else:
+                for i in pos_adj:
+                    if in_pos(i, pos_liv):
+                        raise ValueError("obter_movimento_manual: escolha invalida")
             return (orig, dest)
+        else:
+            raise ValueError("obter_movimento_manual: escolha invalida")
     else:
         pos = input("Turno do jogador. Escolha uma posicao: ")
-        posicao = cria_posicao(pos[0], pos[1])
-        if not in_pos(posicao, pos_liv):
-            raise ValueError("obter_movimento_manual: escolha invalida")
+        if isinstance(pos, str) and len(pos) == 2 and pos[0] in ("a", "b", "c") and pos[1] in ("1", "2", "3"):
+            posicao = cria_posicao(pos[0], pos[1])
+            if not in_pos(posicao, pos_liv):
+                raise ValueError("obter_movimento_manual: escolha invalida")
+            else:
+                return (posicao, )
         else:
-            return (posicao, )
+            raise ValueError("obter_movimento_manual: escolha invalida")
 
 def pos_vazia(t, j, tup):
     ganhador1 = (cria_peca(" "), j, j)
@@ -329,21 +342,20 @@ def pos_vazia(t, j, tup):
            vazio = vet.index(cria_peca(" "))
            return (i, vazio)
 
-
 def vitoria(t, j):
     vazio = pos_vazia(t, j, ("a", "b", "c"))
     if vazio:
-        return (cria_posicao(vazio[0], str(vazio[1] + 1)))
+        return (cria_posicao(vazio[0], str(vazio[1] + 1)), )
 
     vazio1 = pos_vazia(t, j, ("1", "2", "3"))
-    
-    if vazio1[1] == 0:
-        ch = "a"
-    elif vazio1[1] == 1:
-        ch = "b"
-    elif vazio1[1] == 2:
-        ch = "c"
-    return(cria_posicao(ch, vazio1[0]))
+    if vazio1:
+        if vazio1[1] == 0:
+            ch = "a"
+        elif vazio1[1] == 1:
+            ch = "b"
+        elif vazio1[1] == 2:
+            ch = "c"
+        return(cria_posicao(ch, vazio1[0]), )
 
 def bloqueio(t, j):
     j = inteiro_para_peca(-peca_para_inteiro(j))
@@ -388,7 +400,99 @@ def minimax(t, j, prof, seq = ()):
                         melhor_seq_movimentos = nova_seq_movimentos
         return melhor_resultado, melhor_seq_movimentos
 
+def movimento_auto_coloc(t, j):
+    if vitoria(t, j):
+        return vitoria(t, j)
+    elif bloqueio(t, j):
+        return bloqueio(t, j)
+    elif centro(t):
+        return centro(t)
+    elif canto_vazio(t):
+        return canto_vazio(t)
+    elif lateral_vazio(t):
+        return lateral_vazio(t)
+
 def obter_movimento_auto(t, j, str):
     if not fase_movimento(t):
+        return movimento_auto_coloc(t, j)
+    else:
+        if str == "facil":
+            pos_jog = obter_posicoes_jogador(t, j)
+            pos_livres = obter_posicoes_livres(t)
+            for i in pos_jog:
+                pos_adj = obter_posicoes_adjacentes(i)
+                for j in pos_adj:
+                    if in_pos(j, pos_livres):
+                        return (i, j)
+        elif str == "normal":
+            return minimax(t, j, 1)[1]
+        elif str == "dificil":
+            return minimax(t, j, 5)[1]
 
+def moinho_jog(jog, st):
+    t = cria_tabuleiro()
+    i = 3
+    j = cria_peca("X")
+    while i != 0:
+        pos = obter_movimento_manual(t, j)
+        t = coloca_peca(t, j, pos[0])
+        print(tabuleiro_para_str(t))
+        poscomp = obter_movimento_auto(t, cria_peca("O"), st)
+        t = coloca_peca(t, cria_peca("O"), poscomp[0])
+        print("Turno do computador (" + st + "):")
+        print(tabuleiro_para_str(t))
+        i -= 1
+    if not pecas_iguais(obter_ganhador(t), cria_peca(" ")):
+        return obter_ganhador(t)
+    else:
+        while pecas_iguais(obter_ganhador(t), cria_peca(" ")):
+            mov = obter_movimento_manual(t, j)
+            t = move_peca(t, mov[0], mov[1])
+            print(tabuleiro_para_str(t))
+            if not pecas_iguais(obter_ganhador(t), cria_peca(" ")):
+                return peca_para_str(obter_ganhador(t))
+            movcomp = obter_movimento_auto(t, cria_peca("O"), st)
+            t = move_peca(t, movcomp[0], movcomp[1])
+            print("Turno do computador (" + st + "):")
+            print(tabuleiro_para_str(t))
+        return peca_para_str(obter_ganhador(t))
 
+def moinho_comp(jog, st):
+    t = cria_tabuleiro()
+    i = 3
+    j = cria_peca("O")
+    while i != 0:
+        poscomp = obter_movimento_auto(t, cria_peca("X"), st)
+        t = coloca_peca(t, cria_peca("X"), poscomp[0])
+        print("Turno do computador (" + st + "):")
+        print(tabuleiro_para_str(t))
+        pos = obter_movimento_manual(t, j)
+        t = coloca_peca(t, j, pos[0])
+        print(tabuleiro_para_str(t))
+        i -= 1
+    if not pecas_iguais(obter_ganhador(t), cria_peca(" ")):
+        return obter_ganhador(t)
+    else:
+        while pecas_iguais(obter_ganhador(t), cria_peca(" ")):
+            movcomp = obter_movimento_auto(t, cria_peca("X"), st)
+            t = move_peca(t, movcomp[0], movcomp[1])
+            print("Turno do computador (" + st + "):")
+            print(tabuleiro_para_str(t))
+            if not pecas_iguais(obter_ganhador(t), cria_peca(" ")):
+                return peca_para_str(obter_ganhador(t))
+            mov = obter_movimento_manual(t, j)
+            t = move_peca(t, mov[0], mov[1])
+            print(tabuleiro_para_str(t))
+        return peca_para_str(obter_ganhador(t))
+
+def moinho(jog, st):
+    if not isinstance(jog, str) and (jog == "[X]" or jog == "[O]") or\
+    not isinstance(st, str) and (st == "facil" or st == "normal" or st == "dificil"):
+        raise ValueError("moinho: argumentos invalidos")
+    print("Bem-vindo ao JOGO DO MOINHO. Nivel de dificuldade " + st + ".")
+    t = cria_tabuleiro()
+    print(tabuleiro_para_str(t))
+    if jog == "[X]":
+        return moinho_jog(jog, st)
+    else:
+        return moinho_comp(jog, st)
