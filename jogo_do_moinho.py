@@ -180,7 +180,7 @@ def peca_para_inteiro(j):
         return 1
     elif pecas_iguais(j, cria_peca("O")):
         return -1
-    else:
+    elif pecas_iguais(j, cria_peca(" ")):
         return 0
 
 def inteiro_para_peca(int):
@@ -193,7 +193,7 @@ def inteiro_para_peca(int):
         j = cria_peca("O")
     elif int == 0:
         j = cria_peca(" ")
-    else:
+    elif int == 1:
         j = cria_peca("X")
     return j
 
@@ -242,9 +242,9 @@ def obter_peca(t, p):
     na posicao p do tabuleiro. Se nao estiver ocupada, devolve uma peca livre.
     """
     c = obter_pos_c(p)
-    l = int(obter_pos_l(p))
+    l = int(obter_pos_l(p)) - 1
 
-    return t[c][l - 1]
+    return t[c][l]
 
 def obter_vetor(t, s):
     # obter_vetor: tabuleiro x str -> tuplo de pecas
@@ -261,7 +261,6 @@ def obter_vetor(t, s):
     
     return vetor
 
-# verificar que a posicao onde vou colocar a peca esta vazia
 def coloca_peca(t, j, p):
     # coloca_peca: tabuleiro x peca x posicao -> tabuleiro
     """
@@ -270,8 +269,8 @@ def coloca_peca(t, j, p):
     proprio tabuleiro.
     """
     c = obter_pos_c(p)
-    l = int(obter_pos_l(p))
-    t[c][l - 1] = j
+    l = int(obter_pos_l(p)) - 1
+    t[c][l] = j
 
     return t
 
@@ -281,11 +280,7 @@ def remove_peca(t, p):
     A funcao recebe um tabuleiro e uma posicao e modifica destrutivamente o
     tabuleiro removendo a peca da posicao p, e devolve o proprio tabuleiro
     """
-    c = obter_pos_c(p)
-    l = int(obter_pos_l(p))
-    t[c][l - 1] = cria_peca(" ")
-
-    return t
+    return coloca_peca(t, cria_peca(" "), p)
 
 def move_peca(t, p1, p2):
     # move_peca: tabuleiro x posicao x posicao -> tabuleiro
@@ -294,17 +289,8 @@ def move_peca(t, p1, p2):
     tabuleiro movendo a peca que se encontra na posicao p1 para a posicao p2 e
     devolve o proprio tabuleiro.
     """
-    c1 = obter_pos_c(p1)
-    l1 = int(obter_pos_l(p1))
-    c2 = obter_pos_c(p2)
-    l2 = int(obter_pos_l(p2))
-    
-    if posicoes_iguais(p1, p2):
-        return t
-    else:
-        t[c2][l2 - 1] = t[c1][l1 - 1]
-        t[c1][l1 - 1] = cria_peca(" ")
-        return t
+    j = obter_peca(t, p1)
+    return coloca_peca(remove_peca(t, p1), j, p2)
 
 def eh_tabuleiro(arg):
     # eh_tabuleiro: universal -> booelano
@@ -362,10 +348,7 @@ def eh_posicao_livre(t, p):
     do tabuleiro corresponder a uma posicao livre e False, caso contrario, sem
     nunca gerar erros.
     """
-    c = obter_pos_c(p)
-    l = int(obter_pos_l(p))
-
-    return t[c][l - 1] == cria_peca(" ")
+    return pecas_iguais(obter_peca(t, p), cria_peca(" "))
 
 def vetores_iguais(v1, v2):
     # vetores_iguais: vetor x vetor -> booleano
@@ -644,34 +627,33 @@ def lateral_vazio(t):
     if in_pos(cria_posicao("b", "3"), pos_livre):
         return (cria_posicao("b", "3"), )
 
-def minimax(t, j, prof, seq = ()):
+def minimax(t, j, prof, seq):
     # minimax: tabuleiro x peca x inteiro(profundidade) x tuplo -> tuplo
     """
-    A funcao representa um algoritmo recursivo que consiste na escola do melhor
+    A funcao representa um algoritmo recursivo que consiste na escolha do melhor
     movimento para um proprio assumindo que o adversario ira escolher a pior
     possivel.
     """
+    melhor_seq_movimentos = ()
     if peca_para_inteiro(obter_ganhador(t)) != 0 or prof == 0:
-        return (peca_para_inteiro(obter_ganhador(t)), seq)
+        return peca_para_inteiro(obter_ganhador(t)), seq
     else:
-        melhor_resultado = -peca_para_inteiro(j)
-        pos = obter_posicoes_jogador(t, j)
-        for i in pos:
-            adj = obter_posicoes_adjacentes(i)
-            for k in adj:
+        melhor_resultado = - peca_para_inteiro(j)
+        for i in obter_posicoes_jogador(t, j):
+            for k in obter_posicoes_adjacentes(i):
                 if eh_posicao_livre(t, k):
                     (novo_resultado, nova_seq_movimentos) = \
                         minimax(move_peca(cria_copia_tabuleiro(t), i, k),\
                                 inteiro_para_peca(-peca_para_inteiro(j)),\
                                 prof - 1, seq + (i, k))
-                    if (("melhor_seq_movimentos" not in locals()) or
+                    if (not melhor_seq_movimentos or
                     (pecas_iguais(j, cria_peca("X")) and
                      novo_resultado > melhor_resultado) or
                     (pecas_iguais(j, cria_peca("O")) and
                      novo_resultado < melhor_resultado)):
-                        melhor_resultado = novo_resultado
-                        melhor_seq_movimentos = nova_seq_movimentos
-        return melhor_resultado, melhor_seq_movimentos
+                        melhor_resultado, melhor_seq_movimentos =\
+                            novo_resultado, nova_seq_movimentos
+    return melhor_resultado, melhor_seq_movimentos[0:2]
 
 def movimento_auto_coloc(t, j):
     # movimento_auto_coloc: tabuleiro x peca -> tuplo de posicoes
@@ -709,9 +691,9 @@ def obter_movimento_auto(t, j, str):
                     if in_pos(j, pos_livres):
                         return (i, j)
         elif str == "normal":
-            return minimax(t, j, 1)[1]
+            return minimax(t, j, 1, ())[1]
         elif str == "dificil":
-            return minimax(t, j, 5)[1]
+            return minimax(t, j, 5, ())[1]
 
 def moinho_jogador(jog, st):
     # moinho_jogador: peca x str -> str
