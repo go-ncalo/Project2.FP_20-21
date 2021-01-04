@@ -40,7 +40,7 @@ def cria_copia_posicao(p):
     """
     if not eh_posicao(p):
         raise ValueError("cria_copia_posicao: argumento invalido")
-    return [str(p[0]), str(p[1])]
+    return p.copy()
 
 def obter_pos_c(p):
     # obter_pos_c: posicao -> str
@@ -82,38 +82,37 @@ def obter_posicoes_adjacentes(p):
     l = obter_pos_l(p)
     if l == "1":
         if c == "a":
-            pos_adj = (cria_posicao("b", "1"), cria_posicao("a", "2"),
+            return (cria_posicao("b", "1"), cria_posicao("a", "2"),
                        cria_posicao("b", "2"))
-        if c == "b":
-            pos_adj = (cria_posicao("a", "1"), cria_posicao("c", "1"),
+        elif c == "b":
+            return (cria_posicao("a", "1"), cria_posicao("c", "1"),
                        cria_posicao("b", "2"))
-        if c == "c":
-            pos_adj = (cria_posicao("b", "1"), cria_posicao("b", "2"),
+        elif c == "c":
+            return (cria_posicao("b", "1"), cria_posicao("b", "2"),
                        cria_posicao("c", "2"))
-    if l == "2":
+    elif l == "2":
         if c == "a":
-            pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "2"),
+            return (cria_posicao("a", "1"), cria_posicao("b", "2"),
                        cria_posicao("a", "3"))
-        if c == "b":
-            pos_adj = (cria_posicao("a", "1"), cria_posicao("b", "1"),
+        elif c == "b":
+            return (cria_posicao("a", "1"), cria_posicao("b", "1"),
                        cria_posicao("c", "1"), cria_posicao("a", "2"),
                        cria_posicao("c", "2"), cria_posicao("a", "3"),
                        cria_posicao("b", "3"), cria_posicao("c", "3"))
-        if c == "c":
-            pos_adj = (cria_posicao("c", "1"), cria_posicao("b", "2"),
+        elif c == "c":
+            return (cria_posicao("c", "1"), cria_posicao("b", "2"),
                        cria_posicao("c", "3"))
-    if l == "3":
+    elif l == "3":
         if c == "a":
-            pos_adj = (cria_posicao("a", "2"), cria_posicao("b", "2"),
+            return (cria_posicao("a", "2"), cria_posicao("b", "2"),
                        cria_posicao("b", "3"))
-        if c == "b":
-            pos_adj = (cria_posicao("b", "2"), cria_posicao("a", "3"),
+        elif c == "b":
+            return (cria_posicao("b", "2"), cria_posicao("a", "3"),
                        cria_posicao("c", "3"))
-        if c == "c":
-            pos_adj = (cria_posicao("b", "2"), cria_posicao("c", "2"),
+        elif c == "c":
+            return (cria_posicao("b", "2"), cria_posicao("c", "2"),
                        cria_posicao("b", "3"))
 
-    return pos_adj
 
 # TAD peca
 
@@ -126,14 +125,14 @@ def obter_posicoes_adjacentes(p):
 # peca_para_inteiro: peca -> inteiro
 
 def cria_peca(s):
-    # cria_peca: str x str -> peca
+    # cria_peca: str -> peca
     """
     A funcao recebe uma cadeias de caracteres correspondentes ao identificador
     de um dos jogadores ("X" ou "O") ou a uma peca livre (" ") e devolve a
     respetiva peca.
     Se o argumento for invalido gera um erro.
     """
-    if not isinstance(s, str) or s not in ("X", "O", " "):
+    if not isinstance(s, str) or not s in ("X", "O", " "):
         raise ValueError("cria_peca: argumento invalido")
     return [s]
 
@@ -143,7 +142,8 @@ def eh_peca(arg):
     A funcao recebe um argumento de qualquer tipo e devolve True se for um
     TAD peca e False caso contrario, sem nunca gerar erros.
     """
-    return isinstance(arg, list) and len(arg) == 1 and arg[0] in ("X", "O", " ")
+    return (isinstance(arg, list) and len(arg) == 1 and
+        arg in (["X"], ["O"], [" "]))
 
 def cria_copia_peca(j):
     # cria_copia_peca: peca -> peca
@@ -152,7 +152,7 @@ def cria_copia_peca(j):
     """
     if not eh_peca(j):
         raise ValueError("cria_copia_posicao: argumento invalido")
-    return [str(j[0])]
+    return j.copy()
 
 def pecas_iguais(j1, j2):
     # pecas_iguais: peca x peca -> booleano
@@ -190,12 +190,11 @@ def inteiro_para_peca(int):
     representa o inteiro (1: 'X', -1: 'O', 0: livre)
     """
     if int == -1:
-        j = cria_peca("O")
+        return cria_peca("O")
     elif int == 0:
-        j = cria_peca(" ")
+        return cria_peca(" ")
     elif int == 1:
-        j = cria_peca("X")
-    return j
+        return cria_peca("X")
 
 # TAD tabuleiro
 
@@ -233,7 +232,13 @@ def cria_copia_tabuleiro(t):
     """
     A funcao recebe um tabuleiro e devolve uma copia nova do tabuleiro.
     """
-    return t.copy()
+    # esta funcao efetua uma deepcopy do tabuleiro t
+    dict = {"a": [], "b": [], "c": []}
+    for i in ("a", "b", "c"):
+        for j in range(3):
+            dict[i] += [t[i][j]]
+
+    return dict
 
 def obter_peca(t, p):
     # obter_peca: tabuleiro x posicao -> peca
@@ -241,10 +246,10 @@ def obter_peca(t, p):
     A funcao recebe um tabuleiro e uma posicao e devolve a peca que se encontra
     na posicao p do tabuleiro. Se nao estiver ocupada, devolve uma peca livre.
     """
-    c = obter_pos_c(p)
-    l = int(obter_pos_l(p)) - 1
+    col = obter_pos_c(p)
+    lin = int(obter_pos_l(p)) - 1
 
-    return t[c][l]
+    return t[col][lin]
 
 def obter_vetor(t, s):
     # obter_vetor: tabuleiro x str -> tuplo de pecas
@@ -258,7 +263,7 @@ def obter_vetor(t, s):
             vetor += (t[i][int(s) - 1], )
     elif s in ["a", "b", "c"]:
         vetor = tuple(t[s])
-    
+
     return vetor
 
 def coloca_peca(t, j, p):
@@ -268,9 +273,9 @@ def coloca_peca(t, j, p):
     destrutivamente o tabuleiro colocando a peca j na posicao p e devolve o
     proprio tabuleiro.
     """
-    c = obter_pos_c(p)
-    l = int(obter_pos_l(p)) - 1
-    t[c][l] = j
+    col = obter_pos_c(p)
+    lin = int(obter_pos_l(p)) - 1
+    t[col][lin] = j
 
     return t
 
@@ -411,7 +416,7 @@ def tuplo_para_tabuleiro(t):
         tab["a"][i] = inteiro_para_peca(t[i][0])
         tab["b"][i] = inteiro_para_peca(t[i][1])
         tab["c"][i] = inteiro_para_peca(t[i][2])
-    
+
     return tab
 
 def in_pos(p, pos):
@@ -461,7 +466,7 @@ def obter_posicoes_livres(t):
             pos = cria_posicao(j, i)
             if pecas_iguais(obter_peca(t, pos), cria_peca(" ")):
                 pos_livres += (pos, )
-    
+
     return pos_livres
 
 def obter_posicoes_jogador(t, j):
@@ -476,7 +481,7 @@ def obter_posicoes_jogador(t, j):
             pos = cria_posicao(k, i)
             if pecas_iguais(obter_peca(t, pos), j):
                 pos_jogador += (pos, )
-    
+
     return pos_jogador
 
 def fase_movimento(t):
@@ -576,7 +581,7 @@ def vitoria(t, j):
             ch = "b"
         elif vazio1[1] == 2:
             ch = "c"
-        return(cria_posicao(ch, vazio1[0]), )
+        return cria_posicao(ch, vazio1[0]),
 
 def bloqueio(t, j):
     # bloqueio - tabuleiro x peca -> tuplo de posicoes
@@ -643,8 +648,8 @@ def minimax(t, j, prof, seq):
             for k in obter_posicoes_adjacentes(i):
                 if eh_posicao_livre(t, k):
                     (novo_resultado, nova_seq_movimentos) = \
-                        minimax(move_peca(cria_copia_tabuleiro(t), i, k),\
-                                inteiro_para_peca(-peca_para_inteiro(j)),\
+                        minimax(move_peca(cria_copia_tabuleiro(t), i, k),
+                                inteiro_para_peca(-peca_para_inteiro(j)),
                                 prof - 1, seq + (i, k))
                     if (not melhor_seq_movimentos or
                     (pecas_iguais(j, cria_peca("X")) and
@@ -695,14 +700,14 @@ def obter_movimento_auto(t, j, str):
         elif str == "dificil":
             return minimax(t, j, 5, ())[1]
 
-def moinho_jogador(jog, st):
-    # moinho_jogador: peca x str -> str
+def moinho_jogador(st):
+    # moinho_jogador: str -> str
     """
-    A funcao recebe uma peca que representa um jogador e uma cadeia de
-    caracteres que indica a dificuldade do jogo e devolve uma cadeia de
-    caracteres que representa o vencedor do jogo. Esta funcao ira imprimir os
-    sucessivos tabuleiros de jogo conforme as jogadas.
-    A funcao e utilizada quando o humano e o primeiro a jogar.
+    A funcao recebe uma cadeia de caracteres que indica a dificuldade do
+    jogo e devolve uma cadeia de caracteres que representa o vencedor
+    do jogo. Esta funcao ira imprimir os sucessivos tabuleiros de jogo
+    conforme as jogadas.
+    A funcao e utilizada quando o jogador e o primeiro a jogar.
     """
     t = cria_tabuleiro()
     i = 3
@@ -731,13 +736,13 @@ def moinho_jogador(jog, st):
             print(tabuleiro_para_str(t))
         return peca_para_str(obter_ganhador(t))
 
-def moinho_computador(jog, st):
-    # moinho_computador: peca x str -> str
+def moinho_computador(st):
+    # moinho_computador: str -> str
     """
-    A funcao recebe uma peca que representa um jogador e uma cadeia de
-    caracteres que indica a dificuldade do jogo e devolve uma cadeia de 
-    caracteres que representa o vencedor do jogo. Esta funcao ira imprimir os
-    sucessivos tabuleiros de jogo conforme as jogadas.
+    A funcao recebe uma cadeia de caracteres que indica a dificuldade do
+    jogo e devolve uma cadeia de caracteres que representa o vencedor
+    do jogo. Esta funcao ira imprimir os sucessivos tabuleiros de jogo
+    conforme as jogadas.
     A funcao e utilizada quando o computador e o primeiro a jogar.
     """
     t = cria_tabuleiro()
@@ -784,6 +789,6 @@ def moinho(jog, st):
     t = cria_tabuleiro()
     print(tabuleiro_para_str(t))
     if jog == "[X]":
-        return moinho_jogador(jog, st)
+        return moinho_jogador(st)
     else:
-        return moinho_computador(jog, st)
+        return moinho_computador(st)
