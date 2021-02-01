@@ -3,4 +3,4 @@ FP Project (20-21) @ IST
 
 *Language*: Python
 
-**GRADE:** NG/20
+**GRADE:** 18.22/20
